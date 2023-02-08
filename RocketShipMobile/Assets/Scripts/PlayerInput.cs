@@ -9,10 +9,20 @@ public class PlayerInput : MonoBehaviour
     public GameObject targetPlanet = null;
     bool moving = false;
     bool calibratingPosition = false;
+    [SerializeField] GameObject gameController; 
+    ScoreTracker scoreTracker;
+
+    void Awake()
+    {
+        scoreTracker = gameController.GetComponentInChildren<ScoreTracker>();
+    }
 
     void Start()
     {
-
+        if (scoreTracker == null)
+        {
+            Debug.Log("No score tracker found");
+        }
     }
 
     void Update()
@@ -26,7 +36,7 @@ public class PlayerInput : MonoBehaviour
         if (Input.GetKey("space"))
         {
             targetPlanet = null;
-            if (moving == false)
+            if (!moving)
             {
                 moving = true; // Stops moving being triggered again if the object is already moving.
                 StartCoroutine(MoveForward());
@@ -56,12 +66,16 @@ public class PlayerInput : MonoBehaviour
         if (!calibratingPosition)
         {
             if (other.gameObject.tag == "Planet")
-            {
-                moving = false;
+            {   
                 calibratingPosition = true;
                 targetPlanet = other.gameObject;
                 float targetPlanetX = targetPlanet.transform.position.x;
                 RecalibratePosition(targetPlanetX);
+
+                scoreTracker.IncrementScore(1); // Increase score by 1
+                Debug.Log(scoreTracker.GetScore());
+
+                moving = false;
             }
         }
     }
@@ -74,12 +88,12 @@ public class PlayerInput : MonoBehaviour
         if (targetX > transform.position.x) // If Ship hits left side of planet
         {
             Debug.Log("Left side of planet");
-            transform.Rotate(new Vector3 (0f, 0f, 90 - angleToTarget));
+            transform.Rotate(new Vector3 (0f, 0f, 90f - angleToTarget));
         }
         else // If Ship hits right side of planet
         {
             Debug.Log("Right side of planet");
-            transform.Rotate(new Vector3 (0f, 0f, 90 + angleToTarget));
+            transform.Rotate(new Vector3 (0f, 0f, 90f + angleToTarget));
         }
         calibratingPosition = false; // Other processes (such as orbiting planet) can continue now.
     }
